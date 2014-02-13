@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/griffon-app/models" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/griffon-app/views" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/griffon-app/controllers" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/griffon-app/conf" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/griffon-app/lifecycle" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/unit" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test/integration" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/griffon-app/services" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="griffon-1.4.0" level="application" />
+    <orderEntry type="module-library" exported="">
+      <library name="Griffon:lib (simpletv)">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="simpletv-griffonPlugins" />
+    <orderEntry type="library" name="glazedlists_java15-1.9.0" level="project" />
+    <orderEntry type="library" name="jsoup-1.7.3" level="project" />
+  </component>
+</module>
+

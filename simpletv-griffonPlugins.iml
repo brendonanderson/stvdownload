@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/glazedlists-2.0.0" />
+    <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/installer-0.8" />
+    <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/miglayout-1.0.0" />
+    <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/swing-1.4.0" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="griffon-1.4.0" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="glazedlists_java15-1.9.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="jsoup-1.7.3" level="project" />
+    <orderEntry type="module-library" exported="">
+      <library name="Griffon:lib (simpletv-griffonPlugins)">
+        <CLASSES>
+          <root url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/installer-0.8/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/installer-0.8/lib" recursive="false" />
+      </library>
+    </orderEntry>
+  </component>
+</module>
+
