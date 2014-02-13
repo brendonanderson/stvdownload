@@ -142,16 +142,6 @@ class SimpletvService {
                         }
                     }
                 }
-//                println "path: ${path}"
-
-//                println episodeUrl
-//                episodeUrl = episodeUrl.replace("hls-1.m3u8", "100")
-//                new HTTPBuilder(episodeUrl).request(Method.GET, ContentType.TEXT) {
-//                    headers["Cookie"] = cookies.join(";")
-//                    response.success = { res, read ->
-//                        println "url ${read.text}"
-//                    }
-//                }
             }
         }
         episodeUrls
