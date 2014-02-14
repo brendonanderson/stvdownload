@@ -1,7 +1,0 @@
-#!/bin/sh
-
-GRIFFON_APP_NAME=Simpletv
-DIRNAME=`dirname "$0"`
-. "$DIRNAME/startApp"
-
-startApp "$@"
