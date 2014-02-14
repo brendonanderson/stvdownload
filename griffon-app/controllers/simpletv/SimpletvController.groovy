@@ -26,7 +26,7 @@ class SimpletvController {
         if (model.selectedEpisodeIndex != null) {
             model.episodeUrls.clear()
             Episode episode = model.episodes[model.selectedEpisodeIndex]
-            List<EpisodeUrl> urls = simpletvService.getEpisodeUrls(episode)
+            List<EpisodeUrl> urls = simpletvService.getEpisodeUrls(episode, model.useLocalUrl)
             model.episodeUrls.addAll(urls)
         }
     }

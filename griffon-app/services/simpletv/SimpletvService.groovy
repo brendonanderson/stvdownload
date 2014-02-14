@@ -18,6 +18,16 @@ class SimpletvService {
 
     public String login(String username, String password) {
 
+        Properties prop = new Properties()
+        File propFile = new File("stv.properties")
+        if (!propFile.exists()) {
+            propFile.createNewFile()
+        }
+        prop.load(propFile.newDataInputStream())
+        prop.setProperty("username", username)
+        prop.setProperty("password", password)
+        prop.store(propFile.newWriter(), null)
+
         new HTTPBuilder("https://www.simple.tv/Auth/SignIn").request(Method.POST, ContentType.JSON) {
             body = [UserName: username, Password: password, RememberMe: "true"]
             response.success = { HttpResponseDecorator resp, reader ->
@@ -37,7 +47,9 @@ class SimpletvService {
                 Document doc = Jsoup.parse(restext)
                 Element section = doc.getElementById("watchShow")
                 localUrl = section.attr("data-localstreambaseurl")
-                remoteUrl = section.attr("data-remotestreambaseurl")
+                remoteUrl = section.attr("data-remotestreambaseurl") + "/"
+                println localUrl
+                println remoteUrl
             }
         }
     }
@@ -105,8 +117,10 @@ class SimpletvService {
         }
         return episodes
     }
-    public List<EpisodeUrl> getEpisodeUrls(Episode episode) {
+    public List<EpisodeUrl> getEpisodeUrls(Episode episode, Boolean useLocalUrls) {
 //        log.info("service episode: ${episode.title}: ${episode.instanceId}:${episode.groupId}:${episode.itemId}")
+        String urlToUse = (useLocalUrls?localUrl:remoteUrl)
+        println urlToUse
         List<EpisodeUrl> episodeUrls = []
         String url = "https://my.simple.tv/Library/Player" +
                 "?browserUTCOffsetMinutes=-300" +
@@ -123,20 +137,20 @@ class SimpletvService {
                 Document doc = Jsoup.parse(h)
                 String path = doc.getElementById("video-player-large").attr("data-streamlocation")
                 log.info("Path: ${path}")
-                new HTTPBuilder(localUrl + path).request(Method.GET, ContentType.TEXT) {
+                new HTTPBuilder(urlToUse + path).request(Method.GET, ContentType.TEXT) {
                     headers["Cookie"] = cookies.join(";")
                     response.success = { res, read ->
                         List<String> qualities = read.text.split("\n")
                         qualities.each {
                             if (!it.startsWith("#")) {
                                 log.info(it)
-                                String q = it.replace("hls-0.m3u8", "100")
-                                q = q.replace("hls-1.m3u8", "100")
-                                q = q.replace("hls-2.m3u8", "100")
+                                String q = it.replaceAll(/hls-[0-9]\.m3u8/,"100")
+//                                q = q.replace("hls-1.m3u8", "100")
+//                                q = q.replace("hls-2.m3u8", "100")
                                 String[] pathparts = path.split("/")
                                 String newpath = pathparts[0..(pathparts.length - 2)].join("/")
                                 EpisodeUrl episodeUrl = new EpisodeUrl()
-                                episodeUrl.url = localUrl + newpath.substring(1) + "/" + q
+                                episodeUrl.url = urlToUse + newpath.substring(1) + "/" + q
                                 episodeUrls.add(episodeUrl)
                             }
                         }

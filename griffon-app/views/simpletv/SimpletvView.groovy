@@ -13,10 +13,11 @@ application(title: 'simpletv',
     panel(constraints: "grow") {
         migLayout(layoutConstraints: "fill")
         label(text: "Username", constraints: "right")
-        textField(columns: 10, constraints: "wrap", text: bind("username", target: model))
+        textField(columns: 10, constraints: "wrap", text: bind("username", source: model, mutual: true))
         label(text: "Password", constraints: "right")
-        passwordField(columns: 10, constraints: "wrap", text: bind("password", target: model))
+        passwordField(columns: 10, constraints: "wrap", text: bind("password", source: model, mutual: true))
         button("Login", constraints: "wrap", actionPerformed: controller.login)
+        checkBox(label: "Local", selected: bind("useLocalUrl", source: model, mutual: true))
     }
     panel(constraints: "w 230!", border: titledBorder(title: "Shows")) {
         borderLayout()
@@ -69,7 +70,7 @@ application(title: 'simpletv',
     panel(constraints: "wrap, grow") {
         migLayout()
         label(text: "Location", constraints: "right")
-        textField(columns: 20, constraints: "wrap", text: bind{model.saveLocation})
+        textField(columns: 20, constraints: "wrap", text: bind("saveLocation", source: model, mutual: true))
         button("Download", constraints: "wrap", actionPerformed: controller.download)
         progressBar(value: bind{model.downloadPct}, minimum: 0, maximum: 100, string: bind{(model.downloadPct as Long) + "%"}, stringPainted: true)
     }

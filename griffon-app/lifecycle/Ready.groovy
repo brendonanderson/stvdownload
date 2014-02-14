@@ -1,3 +1,5 @@
+import simpletv.SimpletvModel
+
 /*
  * This script is executed inside the UI thread, so be sure to  call
  * long running code in another thread.
@@ -11,3 +13,12 @@
  * - execInsideUIAsync { // your code }
  * - execInsideUISync { // your code }
  */
+
+SimpletvModel stvmodel = app.getModels()["simpletv"] as SimpletvModel
+Properties prop = new Properties()
+File file = new File("stv.properties")
+if (file.exists()) {
+    prop.load(file.newDataInputStream())
+    stvmodel.username = prop.getProperty("username")
+    stvmodel.password = prop.getProperty("password")
+}
