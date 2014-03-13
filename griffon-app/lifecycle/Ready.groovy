@@ -21,5 +21,7 @@ if (file.exists()) {
     prop.load(file.newDataInputStream())
     stvmodel.username = prop.getProperty("username")
     stvmodel.password = prop.getProperty("password")
-    stvmodel.saveLocation = prop.getProperty("saveLocation")?: "${System.getProperty('user.home')}"
+    stvmodel.saveLocation = prop.getProperty("saveLocation")?:System.getProperty('user.home')
+} else {
+    stvmodel.saveLocation = System.getProperty('user.home')
 }
