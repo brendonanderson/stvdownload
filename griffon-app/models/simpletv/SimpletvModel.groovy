@@ -10,7 +10,7 @@ class SimpletvModel {
     @Bindable Double downloadPct = new Double(0)
     Integer selectedEpisodeIndex
     Integer selectedUrlIndex
-    @Bindable String saveLocation = "${System.getProperty('user.home')}"
+    @Bindable String saveLocation
     @Bindable Boolean useLocalUrl = true
 
     Boolean connected = false

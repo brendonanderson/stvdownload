@@ -77,10 +77,14 @@ class SimpletvService {
         return shows
     }
     public List<Episode> getEpisodes(Show show) {
+//        String url = "https://my.simple.tv/Library/ShowDetail" +
+//                "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
+//                "&browserUTCOffsetMinutes=-360" +
+//                "&groupID=" + show.groupId
         String url = "https://my.simple.tv/Library/ShowDetail" +
-                "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
-                "&browserUTCOffsetMinutes=-360" +
-                "&groupID=" + show.groupId
+                "?browserDateTimeUTC=2014%2F3%2F13+15%3A45%3A21" +
+                "&browserUTCOffsetMinutes=-300" +
+                "&groupID=${show.groupId}"
         List<Episode> episodes = []
         new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
@@ -122,13 +126,20 @@ class SimpletvService {
         String urlToUse = (useLocalUrls?localUrl:remoteUrl)
         println urlToUse
         List<EpisodeUrl> episodeUrls = []
+//        String url = "https://my.simple.tv/Library/Player" +
+//                "?browserUTCOffsetMinutes=-300" +
+//                "&groupID=${episode.groupId}" +
+//                "&instanceID=${episode.instanceId}" +
+//                "&itemID=${episode.itemId}" +
+//                "&isReachedRemotely=true"
         String url = "https://my.simple.tv/Library/Player" +
                 "?browserUTCOffsetMinutes=-300" +
                 "&groupID=${episode.groupId}" +
-                "&instanceID=${episode.instanceId}" +
                 "&itemID=${episode.itemId}" +
-                "&isReachedRemotely=true"
+                "&instanceID=${episode.instanceId}" +
+                "&isReachedLocally=false"
 
+        println "Url to get episode urls: ${url}"
         new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
             response.success = { resp, reader ->
@@ -167,6 +178,14 @@ class SimpletvService {
         String filename = "${show.name} - s${episode.season}e${episode.episode} - ${episode.title}.mp4"
         if (model.saveLocation) {
             filename = model.saveLocation + "/" + filename
+            Properties prop = new Properties()
+            File propFile = new File("stv.properties")
+            if (!propFile.exists()) {
+                propFile.createNewFile()
+            }
+            prop.load(propFile.newDataInputStream())
+            prop.setProperty("saveLocation", model.saveLocation)
+            prop.store(propFile.newWriter(), null)
         }
         new HTTPBuilder(url).request(Method.GET, ContentType.BINARY) {
             headers["Cookie"] = cookies.join(";")
