@@ -7,4 +7,4 @@ This is a very simply written app using Griffon to download recorded mp4 files f
 
 Very little error reporting is included.  Have patience between button clicks as the Simple TV webservice is pretty slow.
 
-Check out the dist/windows directory for compiled binaries.  There is a .exe for Windows and batch/shell scripts that seem to work in Windows, OSX, and Linux.
+Find compiled binaries here: https://github.com/brendonanderson/stvdownload/releases
