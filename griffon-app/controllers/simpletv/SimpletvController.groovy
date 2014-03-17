@@ -12,10 +12,14 @@ class SimpletvController {
         List<Show> showList = simpletvService.getShows()
         model.shows.clear()
         model.shows.addAll(showList)
+        showList.each {
+            println it.name + ":" + it.groupId + "\n"
+        }
     }
 
     def getEpisodes = { Integer index ->
         println model.shows[index].name
+        println model.shows[index].groupId
         model.episodes.clear()
         model.episodeUrls.clear()
         model.selectedEpisodeIndex = null

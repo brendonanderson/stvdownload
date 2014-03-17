@@ -137,14 +137,14 @@ class SimpletvService {
                 "&groupID=${episode.groupId}" +
                 "&itemID=${episode.itemId}" +
                 "&instanceID=${episode.instanceId}" +
-                "&isReachedLocally=false"
+                "&isReachedLocally=${useLocalUrls}"
 
         println "Url to get episode urls: ${url}"
         new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
             response.success = { resp, reader ->
                 String h = reader.text
-//                println h
+                println h
                 Document doc = Jsoup.parse(h)
                 String path = doc.getElementById("video-player-large").attr("data-streamlocation")
                 log.info("Path: ${path}")
@@ -162,6 +162,7 @@ class SimpletvService {
                                 String newpath = pathparts[0..(pathparts.length - 2)].join("/")
                                 EpisodeUrl episodeUrl = new EpisodeUrl()
                                 episodeUrl.url = urlToUse + newpath.substring(1) + "/" + q
+                                println episodeUrl.url
                                 episodeUrls.add(episodeUrl)
                             }
                         }
@@ -176,6 +177,7 @@ class SimpletvService {
         Episode episode = model.episodes[model.selectedEpisodeIndex]
         Show show = model.shows.find { it.groupId == episode.groupId }
         String filename = "${show.name} - s${episode.season}e${episode.episode} - ${episode.title}.mp4"
+        filename = filename.replace(":", "")
         if (model.saveLocation) {
             filename = model.saveLocation + "/" + filename
             Properties prop = new Properties()
@@ -212,3 +214,4 @@ class SimpletvService {
         }
     }
 }
+//https://my.simple.tv/Library/Player?browserUTCOffsetMinutes=-300&groupID=e6df63ed-e6b5-4bec-93e6-358ed8b5e656&itemID=17047378-5e51-11e3-9fa9-12313d23fcb0&instanceID=3e5d884e-5e4f-11e3-9fa9-12313d23fcb0&isReachedLocally=true
