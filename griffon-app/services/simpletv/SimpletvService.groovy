@@ -176,8 +176,13 @@ class SimpletvService {
         println url
         Episode episode = model.episodes[model.selectedEpisodeIndex]
         Show show = model.shows.find { it.groupId == episode.groupId }
-        String filename = "${show.name} - s${episode.season}e${episode.episode} - ${episode.title}.mp4"
-        filename = filename.replace(":", "")
+        String filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
+        filename = filename.replaceAll(/[^a-zA-Z0-9-.&_ ]/, "")
+        if (model.saveLocation) {
+            if (!new File(model.saveLocation).exists()) {
+                new File(model.saveLocation).mkdirs()
+            }
+        }
         if (model.saveLocation) {
             filename = model.saveLocation + "/" + filename
             Properties prop = new Properties()
