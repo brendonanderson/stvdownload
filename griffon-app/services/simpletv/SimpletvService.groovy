@@ -77,10 +77,6 @@ class SimpletvService {
         return shows
     }
     public List<Episode> getEpisodes(Show show) {
-//        String url = "https://my.simple.tv/Library/ShowDetail" +
-//                "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
-//                "&browserUTCOffsetMinutes=-360" +
-//                "&groupID=" + show.groupId
         String url = "https://my.simple.tv/Library/ShowDetail" +
                 "?browserDateTimeUTC=2014%2F3%2F13+15%3A45%3A21" +
                 "&browserUTCOffsetMinutes=-300" +
@@ -126,12 +122,6 @@ class SimpletvService {
         String urlToUse = (useLocalUrls?localUrl:remoteUrl)
         println urlToUse
         List<EpisodeUrl> episodeUrls = []
-//        String url = "https://my.simple.tv/Library/Player" +
-//                "?browserUTCOffsetMinutes=-300" +
-//                "&groupID=${episode.groupId}" +
-//                "&instanceID=${episode.instanceId}" +
-//                "&itemID=${episode.itemId}" +
-//                "&isReachedRemotely=true"
         String url = "https://my.simple.tv/Library/Player" +
                 "?browserUTCOffsetMinutes=-300" +
                 "&groupID=${episode.groupId}" +
@@ -154,15 +144,13 @@ class SimpletvService {
                         List<String> qualities = read.text.split("\n")
                         qualities.each {
                             if (!it.startsWith("#")) {
-                                log.info(it)
-                                String q = it.replaceAll(/hls-[0-9]\.m3u8/,"100")
-//                                q = q.replace("hls-1.m3u8", "100")
-//                                q = q.replace("hls-2.m3u8", "100")
+                                Integer inc = it.substring(it.indexOf("hls-") + 4, it.indexOf(".m3u8")) as Integer
+                                String q = it.replaceAll(/hls-[0-9]\.m3u8/, (100 + inc) as String)
                                 String[] pathparts = path.split("/")
                                 String newpath = pathparts[0..(pathparts.length - 2)].join("/")
                                 EpisodeUrl episodeUrl = new EpisodeUrl()
                                 episodeUrl.url = urlToUse + newpath.substring(1) + "/" + q
-                                println episodeUrl.url
+                                log.info(episodeUrl.url)
                                 episodeUrls.add(episodeUrl)
                             }
                         }
@@ -219,4 +207,3 @@ class SimpletvService {
         }
     }
 }
-//https://my.simple.tv/Library/Player?browserUTCOffsetMinutes=-300&groupID=e6df63ed-e6b5-4bec-93e6-358ed8b5e656&itemID=17047378-5e51-11e3-9fa9-12313d23fcb0&instanceID=3e5d884e-5e4f-11e3-9fa9-12313d23fcb0&isReachedLocally=true
