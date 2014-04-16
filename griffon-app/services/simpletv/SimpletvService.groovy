@@ -14,6 +14,8 @@ class SimpletvService {
     private static Set<String> cookies = []
     private static String localUrl
     private static String remoteUrl
+    private static String accountId
+    private static String mediaServerId
     private static String sid
 
     public String login(String username, String password) {
@@ -28,7 +30,7 @@ class SimpletvService {
         prop.setProperty("password", password)
         prop.store(propFile.newWriter(), null)
 
-        new HTTPBuilder("https://www.simple.tv/Auth/SignIn").request(Method.POST, ContentType.JSON) {
+        new HTTPBuilder("https://us.simple.tv/Auth/SignIn").request(Method.POST, ContentType.JSON) {
             body = [UserName: username, Password: password, RememberMe: "true"]
             response.success = { HttpResponseDecorator resp, reader ->
                 sid = reader["MediaServerID"]
@@ -40,21 +42,34 @@ class SimpletvService {
                 }
             }
         }
-        new HTTPBuilder("https://my.simple.tv").request(Method.GET, ContentType.TEXT) {
+        new HTTPBuilder("https://us-my.simple.tv").request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
             response.success = { HttpResponseDecorator resp, reader ->
                 String restext = reader.text
+//                println restext
                 Document doc = Jsoup.parse(restext)
                 Element section = doc.getElementById("watchShow")
-                localUrl = section.attr("data-localstreambaseurl")
-                remoteUrl = section.attr("data-remotestreambaseurl") + "/"
-                println localUrl
-                println remoteUrl
+                accountId = section.attr("data-accountid")
+                mediaServerId = section.attr("data-mediaserverid")
+//                println "accountId: ${accountId}"
+//                println "mediaServerId: ${mediaServerId}"
             }
         }
+        String dataurl = "https://us-my.simple.tv/Data/RealTimeData?accountId=${accountId}&mediaServerId=${mediaServerId}&playerAlternativeAvailable=false"
+
+        new HTTPBuilder(dataurl).request(Method.GET, ContentType.JSON) {
+            headers["Cookie"] = cookies.join(";")
+            response.success = { HttpResponseDecorator resp, json ->
+                localUrl = json.LocalStreamBaseURL
+                remoteUrl = json.RemoteStreamBaseURL + "/"
+//                println json.LocalStreamBaseURL
+//                println json.RemoteStreamBaseURL
+            }
+        }
+
     }
     public List<Show> getShows() {
-        String url = "https://my.simple.tv/Library/MyShows" +
+        String url = "https://us-my.simple.tv/Library/MyShows" +
                 "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
                 "&browserUTCOffsetMinutes=-360" +
                 "&mediaServerID=" + sid
@@ -63,6 +78,7 @@ class SimpletvService {
             headers["Cookie"] = cookies.join(";")
             response.success = { resp, reader ->
                 String h = reader.text
+//                println h
                 Document doc = Jsoup.parse(h)
                 doc.select("figure").each { Element e ->
                     Show show = new Show()
@@ -77,7 +93,7 @@ class SimpletvService {
         return shows
     }
     public List<Episode> getEpisodes(Show show) {
-        String url = "https://my.simple.tv/Library/ShowDetail" +
+        String url = "https://us-my.simple.tv/Library/ShowDetail" +
                 "?browserDateTimeUTC=2014%2F3%2F13+15%3A45%3A21" +
                 "&browserUTCOffsetMinutes=-300" +
                 "&groupID=${show.groupId}"
@@ -86,8 +102,8 @@ class SimpletvService {
             headers["Cookie"] = cookies.join(";")
             response.success = { resp, reader ->
                 String h = reader.text
-                Document doc = Jsoup.parse(h)
 //                println h
+                Document doc = Jsoup.parse(h)
                 doc.select("#recorded").select("article").each {Element e ->
                     Episode episode = new Episode()
                     episode.instanceId = e.select("a.button-standard-watch").attr("data-instanceid")
@@ -120,24 +136,25 @@ class SimpletvService {
     public List<EpisodeUrl> getEpisodeUrls(Episode episode, Boolean useLocalUrls) {
 //        log.info("service episode: ${episode.title}: ${episode.instanceId}:${episode.groupId}:${episode.itemId}")
         String urlToUse = (useLocalUrls?localUrl:remoteUrl)
-        println urlToUse
+//        println urlToUse
         List<EpisodeUrl> episodeUrls = []
-        String url = "https://my.simple.tv/Library/Player" +
+        String url = "https://us-my.simple.tv/Library/Player" +
                 "?browserUTCOffsetMinutes=-300" +
                 "&groupID=${episode.groupId}" +
                 "&itemID=${episode.itemId}" +
                 "&instanceID=${episode.instanceId}" +
                 "&isReachedLocally=${useLocalUrls}"
 
-        println "Url to get episode urls: ${url}"
+//        println "Url to get episode urls: ${url}"
         new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
             response.success = { resp, reader ->
                 String h = reader.text
-                println h
+//                println h
                 Document doc = Jsoup.parse(h)
                 String path = doc.getElementById("video-player-large").attr("data-streamlocation")
-                log.info("Path: ${path}")
+//                log.info("Path: ${path}")
+//                log.info("URL: ${urlToUse + path}")
                 new HTTPBuilder(urlToUse + path).request(Method.GET, ContentType.TEXT) {
                     headers["Cookie"] = cookies.join(";")
                     response.success = { res, read ->
@@ -161,7 +178,7 @@ class SimpletvService {
         episodeUrls
     }
     public String downloadEpisode(String url, SimpletvModel model) {
-        println url
+//        println url
         Episode episode = model.episodes[model.selectedEpisodeIndex]
         Show show = model.shows.find { it.groupId == episode.groupId }
         String filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
