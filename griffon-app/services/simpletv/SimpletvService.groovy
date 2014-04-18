@@ -8,15 +8,12 @@ import org.apache.http.conn.EofSensorInputStream
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 
 class SimpletvService {
 
     private static Set<String> cookies = []
-    private static String localUrl
-    private static String remoteUrl
     private static String accountId
-    private static String mediaServerId
-    private static String sid
 
     public String login(String username, String password) {
 
@@ -33,7 +30,6 @@ class SimpletvService {
         new HTTPBuilder("https://us.simple.tv/Auth/SignIn").request(Method.POST, ContentType.JSON) {
             body = [UserName: username, Password: password, RememberMe: "true"]
             response.success = { HttpResponseDecorator resp, reader ->
-                sid = reader["MediaServerID"]
                 resp.getHeaders("Set-Cookie").each {
                     String cookie = it.value.split(";")[0]
                     if (cookie.split("=").length > 1) {
@@ -42,6 +38,10 @@ class SimpletvService {
                 }
             }
         }
+    }
+
+    public List<Dvr> getDvrs() {
+        List<Dvr> dvrs = []
         new HTTPBuilder("https://us-my.simple.tv").request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
             response.success = { HttpResponseDecorator resp, reader ->
@@ -50,29 +50,29 @@ class SimpletvService {
                 Document doc = Jsoup.parse(restext)
                 Element section = doc.getElementById("watchShow")
                 accountId = section.attr("data-accountid")
-                mediaServerId = section.attr("data-mediaserverid")
-//                println "accountId: ${accountId}"
-//                println "mediaServerId: ${mediaServerId}"
+
+                Elements uls = doc.select("ul.switch-dvr-list")
+                if (uls.size() == 1) {
+                    uls.select("li").each { Element li ->
+                        Element a = li.select("a").first()
+                        Dvr dvr = new Dvr()
+                        dvr.mediaServerId = a.attr("data-value")
+                        dvr.name = a.text()
+                        dvrs.add(dvr)
+                    }
+                } else {
+                    log.error("Error finding one set of DVRs.  I found ${dvrs?.size()}.  Might be a bug in the code.")
+                }
             }
         }
-        String dataurl = "https://us-my.simple.tv/Data/RealTimeData?accountId=${accountId}&mediaServerId=${mediaServerId}&playerAlternativeAvailable=false"
-
-        new HTTPBuilder(dataurl).request(Method.GET, ContentType.JSON) {
-            headers["Cookie"] = cookies.join(";")
-            response.success = { HttpResponseDecorator resp, json ->
-                localUrl = json.LocalStreamBaseURL
-                remoteUrl = json.RemoteStreamBaseURL + "/"
-//                println json.LocalStreamBaseURL
-//                println json.RemoteStreamBaseURL
-            }
-        }
-
+        dvrs
     }
-    public List<Show> getShows() {
+
+    public List<Show> getShows(String mediaServerId) {
         String url = "https://us-my.simple.tv/Library/MyShows" +
                 "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
                 "&browserUTCOffsetMinutes=-360" +
-                "&mediaServerID=" + sid
+                "&mediaServerID=" + mediaServerId
         List<Show> shows = []
         new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
@@ -133,9 +133,13 @@ class SimpletvService {
         }
         return episodes
     }
-    public List<EpisodeUrl> getEpisodeUrls(Episode episode, Boolean useLocalUrls) {
+    public List<EpisodeUrl> getEpisodeUrls(Episode episode, String mediaServerId, Boolean useLocalUrls) {
 //        log.info("service episode: ${episode.title}: ${episode.instanceId}:${episode.groupId}:${episode.itemId}")
-        String urlToUse = (useLocalUrls?localUrl:remoteUrl)
+
+        Map urlMap = getUrls(mediaServerId)
+
+
+        String urlToUse = (useLocalUrls?urlMap.localUrl:urlMap.remoteUrl)
 //        println urlToUse
         List<EpisodeUrl> episodeUrls = []
         String url = "https://us-my.simple.tv/Library/Player" +
@@ -222,5 +226,19 @@ class SimpletvService {
                 model.downloadPct = 100
             }
         }
+    }
+
+    private Map<String, String> getUrls(String mediaServerId) {
+        Map<String, String> urlMap = [:]
+        String dataurl = "https://us-my.simple.tv/Data/RealTimeData?accountId=${accountId}&mediaServerId=${mediaServerId}&playerAlternativeAvailable=false"
+        new HTTPBuilder(dataurl).request(Method.GET, ContentType.JSON) {
+            headers["Cookie"] = cookies.join(";")
+            response.success = { HttpResponseDecorator resp, json ->
+//                println json
+                urlMap.localUrl = json.LocalStreamBaseURL
+                urlMap.remoteUrl = json.RemoteStreamBaseURL + "/"
+            }
+        }
+        urlMap
     }
 }

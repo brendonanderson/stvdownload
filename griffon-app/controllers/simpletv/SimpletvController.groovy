@@ -9,14 +9,25 @@ class SimpletvController {
         model.selectedEpisodeIndex = null
         simpletvService.login(model.username, model.password)
         model.connected = true
-        List<Show> showList = simpletvService.getShows()
-        model.shows.clear()
-        model.shows.addAll(showList)
-        showList.each {
-            println it.name + ":" + it.groupId + "\n"
+        List<Dvr> dvrs = simpletvService.getDvrs()
+        model.dvrs.clear()
+        model.dvrs.addAll(dvrs)
+        if (dvrs?.size() >= 1) {
+            model.selectedDvrIndex = 0
         }
     }
 
+    def getShows = { Integer index ->
+        simpletvService.getUrls(model.dvrs[model.selectedDvrIndex].mediaServerId)
+        edt {
+            List<Show> showList = simpletvService.getShows(model.dvrs[model.selectedDvrIndex].mediaServerId)
+            model.episodes.clear()
+            model.episodeUrls.clear()
+            model.selectedEpisodeIndex = null
+            model.shows.clear()
+            model.shows.addAll(showList)
+        }
+    }
     def getEpisodes = { Integer index ->
         println model.shows[index].name
         println model.shows[index].groupId
@@ -30,7 +41,7 @@ class SimpletvController {
         if (model.selectedEpisodeIndex != null) {
             model.episodeUrls.clear()
             Episode episode = model.episodes[model.selectedEpisodeIndex]
-            List<EpisodeUrl> urls = simpletvService.getEpisodeUrls(episode, model.useLocalUrl)
+            List<EpisodeUrl> urls = simpletvService.getEpisodeUrls(episode, model.dvrs[model.selectedDvrIndex].mediaServerId, model.useLocalUrl)
             model.episodeUrls.addAll(urls)
         }
     }

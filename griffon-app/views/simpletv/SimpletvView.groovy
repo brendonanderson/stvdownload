@@ -1,6 +1,7 @@
 package simpletv
 
-import javax.swing.ListSelectionModel
+import javax.swing.*
+import java.awt.event.ItemEvent
 
 application(title: 'simpletv',
   pack: true,
@@ -16,7 +17,17 @@ application(title: 'simpletv',
         textField(columns: 10, constraints: "wrap", text: bind("username", source: model, mutual: true))
         label(text: "Password", constraints: "right")
         passwordField(columns: 10, constraints: "wrap", text: bind("password", source: model, mutual: true))
-        button("Login", constraints: "wrap", actionPerformed: controller.login)
+        button("Login", actionPerformed: controller.login)
+        comboBox(
+                constraints: "wrap",
+                model: eventComboBoxModel(source: model.dvrs),
+                selectedIndex: bind("selectedDvrIndex", source: model, mutual: true),
+                itemStateChanged: { e ->
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        controller.getShows(e.source.selectedIndex)
+                    }
+                }
+        )
         checkBox(label: "Local", selected: bind("useLocalUrl", source: model, mutual: true))
     }
     panel(constraints: "w 230!", border: titledBorder(title: "Shows")) {
