@@ -34,7 +34,7 @@ class SimpletvController {
         model.episodes.clear()
         model.episodeUrls.clear()
         model.selectedEpisodeIndex = null
-        model.episodes.addAll(simpletvService.getEpisodes(model.shows[index]))
+        model.episodes.addAll(simpletvService.getEpisodes(model.shows[index], model.dvrs[model.selectedDvrIndex].mediaServerId))
     }
 
     def getEpisodeUrls = { Integer index ->

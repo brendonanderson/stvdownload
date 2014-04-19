@@ -69,6 +69,7 @@ class SimpletvService {
     }
 
     public List<Show> getShows(String mediaServerId) {
+        cookies = fixCookies(cookies, mediaServerId)
         String url = "https://us-my.simple.tv/Library/MyShows" +
                 "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
                 "&browserUTCOffsetMinutes=-360" +
@@ -92,7 +93,8 @@ class SimpletvService {
         }
         return shows
     }
-    public List<Episode> getEpisodes(Show show) {
+    public List<Episode> getEpisodes(Show show, String mediaServerId) {
+        cookies = fixCookies(cookies, mediaServerId)
         String url = "https://us-my.simple.tv/Library/ShowDetail" +
                 "?browserDateTimeUTC=2014%2F3%2F13+15%3A45%3A21" +
                 "&browserUTCOffsetMinutes=-300" +
@@ -135,7 +137,7 @@ class SimpletvService {
     }
     public List<EpisodeUrl> getEpisodeUrls(Episode episode, String mediaServerId, Boolean useLocalUrls) {
 //        log.info("service episode: ${episode.title}: ${episode.instanceId}:${episode.groupId}:${episode.itemId}")
-
+        cookies = fixCookies(cookies, mediaServerId)
         Map urlMap = getUrls(mediaServerId)
 
 
@@ -240,5 +242,21 @@ class SimpletvService {
             }
         }
         urlMap
+    }
+    private Set<String> fixCookies(Set<String> cookies, String mediaServerId) {
+        println mediaServerId
+        Set<String> newCookies = [] as Set<String>
+        println cookies
+        cookies.each { it ->
+            if (it.contains("browserDefaultMediaServer")) {
+                Integer idx1 = it.lastIndexOf("=") + 1
+                String oldId = it.substring(idx1)
+                println "old id = ${oldId}"
+                it = it.replace(oldId, mediaServerId)
+            }
+            newCookies.add(it)
+        }
+        println newCookies
+        newCookies
     }
 }
