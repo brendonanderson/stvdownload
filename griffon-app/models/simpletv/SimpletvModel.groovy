@@ -7,12 +7,32 @@ import ca.odell.glazedlists.SortedList
 class SimpletvModel {
     @Bindable String username
     @Bindable String password
-    @Bindable Double downloadPct = new Double(0)
+    @Bindable ProgressBarPct downloadPct = new ProgressBarPct()
     @Bindable Integer selectedDvrIndex
     Integer selectedEpisodeIndex
     Integer selectedUrlIndex
+    Integer selectedShowIndex
+    Integer selectedBatchShowIndex
+    @Bindable ProgressBarPct batchPct = new ProgressBarPct()
+    @Bindable ProgressBarPct allEpisodesPct = new ProgressBarPct()
+    @Bindable String status
     @Bindable String saveLocation
     @Bindable Boolean useLocalUrl = true
+    @Bindable String postCommand
+
+
+    @Bindable Boolean userNameEnabled = true
+    @Bindable Boolean passwordEnabled = true
+    @Bindable Boolean loginBtnEnabled = true
+
+    @Bindable Boolean showListEnabled = true
+    @Bindable Boolean episodeListEnabled = true
+    @Bindable Boolean qualityListEnabled = true
+    @Bindable Boolean downloadBtnEnabled = false
+
+    @Bindable Boolean batchShowListEnabled = true
+    @Bindable Boolean postCommandEnabled = true
+    @Bindable Boolean downloadAllEnabled = false
 
     Boolean connected = false
 

@@ -173,7 +173,7 @@ class SimpletvService {
                                 String newpath = pathparts[0..(pathparts.length - 2)].join("/")
                                 EpisodeUrl episodeUrl = new EpisodeUrl()
                                 episodeUrl.url = urlToUse + newpath.substring(1) + "/" + q
-                                log.info(episodeUrl.url)
+//                                log.info(episodeUrl.url)
                                 episodeUrls.add(episodeUrl)
                             }
                         }
@@ -183,26 +183,25 @@ class SimpletvService {
         }
         episodeUrls
     }
-    public String downloadEpisode(String url, SimpletvModel model) {
+    public String downloadEpisode(String url, Show show, Episode episode, String saveLocation, ProgressBarPct downloadPct) {
 //        println url
-        Episode episode = model.episodes[model.selectedEpisodeIndex]
-        Show show = model.shows.find { it.groupId == episode.groupId }
+        downloadPct.value = 0
         String filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
         filename = filename.replaceAll(/[^a-zA-Z0-9-.&_ ]/, "")
-        if (model.saveLocation) {
-            if (!new File(model.saveLocation).exists()) {
-                new File(model.saveLocation).mkdirs()
+        if (saveLocation) {
+            if (!new File(saveLocation).exists()) {
+                new File(saveLocation).mkdirs()
             }
         }
-        if (model.saveLocation) {
-            filename = model.saveLocation + "/" + filename
+        if (saveLocation) {
+            filename = saveLocation + "/" + filename
             Properties prop = new Properties()
             File propFile = new File("stv.properties")
             if (!propFile.exists()) {
                 propFile.createNewFile()
             }
             prop.load(propFile.newDataInputStream())
-            prop.setProperty("saveLocation", model.saveLocation)
+            prop.setProperty("saveLocation", saveLocation)
             prop.store(propFile.newWriter(), null)
         }
         new HTTPBuilder(url).request(Method.GET, ContentType.BINARY) {
@@ -216,7 +215,7 @@ class SimpletvService {
                 while (true) {
                     Integer bytecount = reader.read(bytes)
                     bytesDownloaded += bytecount
-                    model.downloadPct = (bytesDownloaded / totalBytes * 100)
+                    downloadPct.value = (bytesDownloaded / totalBytes * 100)
                     if (bytes == null || bytecount == -1) {
                         break;
                     }
@@ -225,7 +224,7 @@ class SimpletvService {
                 fos.flush()
                 fos.close()
                 log.info("Done!")
-                model.downloadPct = 100
+                downloadPct.value = 100
             }
         }
     }
@@ -246,17 +245,17 @@ class SimpletvService {
     private Set<String> fixCookies(Set<String> cookies, String mediaServerId) {
         println mediaServerId
         Set<String> newCookies = [] as Set<String>
-        println cookies
+//        println cookies
         cookies.each { it ->
             if (it.contains("browserDefaultMediaServer")) {
                 Integer idx1 = it.lastIndexOf("=") + 1
                 String oldId = it.substring(idx1)
-                println "old id = ${oldId}"
+//                println "old id = ${oldId}"
                 it = it.replace(oldId, mediaServerId)
             }
             newCookies.add(it)
         }
-        println newCookies
+//        println newCookies
         newCookies
     }
 }

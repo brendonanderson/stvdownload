@@ -22,6 +22,7 @@ if (file.exists()) {
     stvmodel.username = prop.getProperty("username")
     stvmodel.password = prop.getProperty("password")
     stvmodel.saveLocation = prop.getProperty("saveLocation")?:System.getProperty('user.home')
+    stvmodel.postCommand = prop.getProperty("postCommand")
 } else {
     stvmodel.saveLocation = System.getProperty('user.home')
 }
