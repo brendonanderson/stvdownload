@@ -32,7 +32,7 @@ application(title: 'simpletv',
         textField(columns: 15, constraints: "wrap", text: bind("saveLocation", source: model, mutual: true))
         checkBox(label: "Local", selected: bind("useLocalUrl", source: model, mutual: true))
     }
-    tabbedPane(constraints: "grow, height 640!") {
+    tabbedPane(constraints: "grow, height 640!, wrap") {
         panel(title: "Episodes") {
             migLayout(layoutConstraints: "fill")
             panel(border: titledBorder(title: "Shows"), constraints: "width 250!, grow, span 1 2") {
@@ -139,5 +139,9 @@ application(title: 'simpletv',
                 progressBar(value: bind{model.batchPct.value}, minimum: 0, maximum: 100, string: bind{(model.batchPct.value as Long) + "%"}, stringPainted: true, constraints: "wrap")
             }
         }
+    }
+    panel(constraints: "span 2") {
+        label(text: " ")
+        label(text: bind {model.status})
     }
 }
