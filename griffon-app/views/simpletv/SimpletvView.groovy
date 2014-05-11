@@ -74,7 +74,7 @@ application(title: 'simpletv',
                     )
                 }
             }
-            panel(border: titledBorder(title: "Quality"), constraints: "width 85!, wrap") {
+            panel(border: titledBorder(title: "Quality"), constraints: "width 85!, height 50:100, wrap") {
                 borderLayout()
                 scrollPane() {
                     list(
