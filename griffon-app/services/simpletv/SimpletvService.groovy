@@ -186,7 +186,7 @@ class SimpletvService {
     public String downloadEpisode(String url, Show show, Episode episode, String saveLocation, ProgressBarPct downloadPct) {
 //        println url
         downloadPct.value = 0
-        String filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
+        String filename = "${show.name} - ${episode.toString()}.mp4"
         filename = filename.replaceAll(/[^a-zA-Z0-9-.&_ ]/, "")
         if (saveLocation) {
             if (!new File(saveLocation).exists()) {
