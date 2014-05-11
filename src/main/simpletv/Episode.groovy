@@ -11,6 +11,8 @@ class Episode {
     Integer episode
 
     String toString() {
-        "${title} - s${season?:"XX"}e${episode?:"YY"}"
+        def sss = (season?:"XX").toString().padLeft(2, "0")
+        def eee = (episode?:"YY").toString().padLeft(2, "0")
+        "s${sss}e${eee}-${title}"
     }
 }
