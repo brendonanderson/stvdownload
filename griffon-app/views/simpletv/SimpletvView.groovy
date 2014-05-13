@@ -11,7 +11,7 @@ application(title: 'simpletv',
                imageIcon('/griffon-icon-32x32.png').image,
                imageIcon('/griffon-icon-16x16.png').image]) {
     migLayout(layoutConstraints: "fill")
-    panel(constraints: "grow") {
+    panel() {
         migLayout(layoutConstraints: "fill")
         label(text: "Username", constraints: "right")
         textField(columns: 10, constraints: "wrap", text: bind("username", source: model, mutual: true), enabled: bind("userNameEnabled", source: model, mutual: true))
@@ -32,10 +32,10 @@ application(title: 'simpletv',
         textField(columns: 15, constraints: "wrap", text: bind("saveLocation", source: model, mutual: true))
         checkBox(label: "Local", selected: bind("useLocalUrl", source: model, mutual: true))
     }
-    tabbedPane(constraints: "wrap") {
+    tabbedPane(constraints: "grow, height 640, wrap") {
         panel(title: "Episodes") {
-            migLayout()
-            panel(border: titledBorder(title: "Shows"), constraints: "width 200!") {
+            migLayout(layoutConstraints: "fill")
+            panel(border: titledBorder(title: "Shows"), constraints: "width 200:250, grow, span 1 2") {
                 borderLayout()
                 scrollPane() {
                     list(
@@ -54,7 +54,7 @@ application(title: 'simpletv',
                     )
                 }
             }
-            panel(border: titledBorder(title: "Episodes"), constraints: "width 200!") {
+            panel(border: titledBorder(title: "Episodes"), constraints: "width 200:350, grow, span 1 2") {
                 borderLayout()
                 scrollPane() {
                     list(
@@ -74,7 +74,7 @@ application(title: 'simpletv',
                     )
                 }
             }
-            panel(border: titledBorder(title: "Quality"), constraints: "width 85!") {
+            panel(border: titledBorder(title: "Quality"), constraints: "width 85!, height 50:100, wrap") {
                 borderLayout()
                 scrollPane() {
                     list(
@@ -140,7 +140,7 @@ application(title: 'simpletv',
             }
         }
     }
-    panel(constraints: "span 2") {
+    panel(constraints: "span 2, growprio 1") {
         label(text: " ")
         label(text: bind {model.status})
     }
