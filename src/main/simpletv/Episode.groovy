@@ -45,14 +45,9 @@ class Episode {
 	}
 
     String toString() {
+		// the format of ' - ' (whitespaces included) is expected by Plex
+		// if changed, be sure to account for "plex compat" mode
 		def se = getSeasonEpisodeToken()
-        "${se}-${title}"
+        "${se} - ${title}"
     }
-
-	String getNameForPlex()
-	{
-		def season = (season?:"XX").toString().padLeft(2, "0")
-		def se = getSeasonEpisodeToken()
-		return "${se} - ${title}"
-	}	
 }

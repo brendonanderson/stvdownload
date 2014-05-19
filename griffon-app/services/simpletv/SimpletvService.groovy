@@ -208,7 +208,7 @@ class SimpletvService {
 			filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
 		} else {
 			// Plex compatible - https://support.plex.tv/hc/en-us/articles/200220687-Naming-Series-Based-TV-Shows
-		    filename = "${show.name} - ${episode.getNameForPlex()}.mp4"
+		    filename = "${show.name} - ${episode.toString()}.mp4"
 			filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
 
 			saveLocation = "${saveLocation}/TV Shows/${show.name}/Season ${episode.getPaddedSeason()}"
