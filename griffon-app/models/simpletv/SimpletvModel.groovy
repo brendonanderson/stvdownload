@@ -17,6 +17,7 @@ class SimpletvModel {
     @Bindable ProgressBarPct allEpisodesPct = new ProgressBarPct()
     @Bindable String status
     @Bindable String saveLocation
+	@Bindable Boolean plexCompatible = true
     @Bindable Boolean useLocalUrl = true
     @Bindable String postCommand
 
