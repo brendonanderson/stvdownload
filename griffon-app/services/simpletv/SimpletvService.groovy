@@ -183,11 +183,36 @@ class SimpletvService {
         }
         episodeUrls
     }
-    public String downloadEpisode(String url, Show show, Episode episode, String saveLocation, ProgressBarPct downloadPct) {
-//        println url
+    public String downloadEpisode(String url, Show show, Episode episode, String saveLocation, ProgressBarPct downloadPct, Boolean plexCompatible) {
+		// TODO: the whole "download" process "fails" silently if no path is
+		// defined, need to get better messaging in here and re-write this code
+		// in a more robust way
+        Properties prop = new Properties()
+        File propFile = new File("stv.properties")
+        if (!propFile.exists()) {
+            propFile.createNewFile()
+        }
+
+		if (saveLocation) {
+			// TODO: consider moving this to a central, reactive location that
+			// persists even if you don't press the download button
+			// do this first because in "plex compatible mode" the path will be
+			// augmented with additional segments
+			prop.setProperty("saveLocation", saveLocation)
+		}
+
         downloadPct.value = 0
-        String filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
-        filename = filename.replaceAll(/[^a-zA-Z0-9-.&_ ]/, "")
+		String filename;
+		if (!plexCompatible) {
+			filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
+			filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
+		} else {
+			// Plex compatible - https://support.plex.tv/hc/en-us/articles/200220687-Naming-Series-Based-TV-Shows
+		    filename = "${show.name} - ${episode.toString()}.mp4"
+			filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
+
+			saveLocation = "${saveLocation}/TV Shows/${show.name}/Season ${episode.getPaddedSeason()}"
+		}
         if (saveLocation) {
             if (!new File(saveLocation).exists()) {
                 new File(saveLocation).mkdirs()
@@ -195,13 +220,7 @@ class SimpletvService {
         }
         if (saveLocation) {
             filename = saveLocation + "/" + filename
-            Properties prop = new Properties()
-            File propFile = new File("stv.properties")
-            if (!propFile.exists()) {
-                propFile.createNewFile()
-            }
             prop.load(propFile.newDataInputStream())
-            prop.setProperty("saveLocation", saveLocation)
             prop.store(propFile.newWriter(), null)
         }
         new HTTPBuilder(url).request(Method.GET, ContentType.BINARY) {

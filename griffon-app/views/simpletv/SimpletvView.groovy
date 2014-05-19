@@ -29,8 +29,9 @@ application(title: 'simpletv',
                 }
         )
         label(text: "Save Location", constraints: "right")
-        textField(columns: 15, constraints: "wrap", text: bind("saveLocation", source: model, mutual: true))
-        checkBox(label: "Local", selected: bind("useLocalUrl", source: model, mutual: true))
+        textField(columns: 15, text: bind("saveLocation", source: model, mutual: true), constraints: "wrap")
+        checkBox(label: "Local", selected: bind("useLocalUrl", source: model, mutual: true), constraints: "wrap")
+		checkBox(label: "Plex Compatible", selected: bind("plexCompatible", source: model, mutual: true))
     }
     tabbedPane(constraints: "grow, height 640, wrap") {
         panel(title: "Episodes") {
