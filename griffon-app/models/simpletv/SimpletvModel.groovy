@@ -13,6 +13,7 @@ class SimpletvModel {
     Integer selectedUrlIndex
     Integer selectedShowIndex
     Integer selectedBatchShowIndex
+    @Bindable Integer selectedNamingMode = 2
     @Bindable ProgressBarPct batchPct = new ProgressBarPct()
     @Bindable ProgressBarPct allEpisodesPct = new ProgressBarPct()
     @Bindable String status
@@ -37,10 +38,13 @@ class SimpletvModel {
 
     Boolean connected = false
 
+    private List<String> namingModeList = ["Episode/Season Numbered", "Plex Filename Only", "Plex with Directories"]
+
 
     SortedList<Dvr> dvrs = new SortedList(new BasicEventList(), {a,b -> a.name.toLowerCase() <=> b.name.toLowerCase()} as Comparator)
     SortedList<Show> shows = new SortedList(new BasicEventList(), {a,b -> a.name.toLowerCase() <=> b.name.toLowerCase()} as Comparator)
     SortedList<Episode> episodes = new SortedList(new BasicEventList(), {a,b -> (a.season <=> b.season ?: a.episode <=> b.episode)} as Comparator)
     SortedList<EpisodeUrl> episodeUrls = new SortedList(new BasicEventList(), {a,b -> a.toString() <=> b.toString()} as Comparator)
+    SortedList<String> namingModes = new SortedList(new BasicEventList(namingModeList), {a,b -> a <=> b} as Comparator)
 
 }

@@ -46,7 +46,6 @@ class SimpletvService {
             headers["Cookie"] = cookies.join(";")
             response.success = { HttpResponseDecorator resp, reader ->
                 String restext = reader.text
-//                println restext
                 Document doc = Jsoup.parse(restext)
                 Element section = doc.getElementById("watchShow")
                 accountId = section.attr("data-accountid")
@@ -69,121 +68,86 @@ class SimpletvService {
     }
 
     public List<Show> getShows(String mediaServerId) {
-        cookies = fixCookies(cookies, mediaServerId)
-        String url = "https://us-my.simple.tv/Library/MyShows" +
-                "?browserDateTimeUTC=2014%2F2%2F4+16%3A16%3A18" +
-                "&browserUTCOffsetMinutes=-360" +
-                "&mediaServerID=" + mediaServerId
+
         List<Show> shows = []
-        new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
-            headers["Cookie"] = cookies.join(";")
+        String jsonUrl = "https://stv-p-api1-prod.rsslabs.net/content/ond/contentmap/${mediaServerId}/groups?page=1-60&composition=mediaserver&state=Library"
+
+        new HTTPBuilder(jsonUrl).request(Method.GET, ContentType.JSON) {
+            headers["Host"] = "stv-p-api1-prod.rsslabs.net"
+            headers["X-RSSINC-CLIENTTYPE"] = "ipadplayer"
+            headers["User-Agent"] = "Simple.TV/772 CFNetwork/672.1.14 Darwin/14.0.0"
+            headers["Authorization"] = "Basic ${getEncodedUserPass()}"
             response.success = { resp, reader ->
-                String h = reader.text
-//                println h
-                Document doc = Jsoup.parse(h)
-                doc.select("figure").each { Element e ->
+                reader.Groups.each { s ->
                     Show show = new Show()
-                    show.groupId = e.attr("data-groupid")
-                    show.imgUrl = e.select("img").first().attr("src")
-                    show.name = e.select("b").first().text()
-                    show.episodes = e.select("span.no").first().text() as Integer
+                    show.groupId = s.ID
+                    show.imgUrl = s.Image.ImageUrl
+                    show.name = s.Title
                     shows.add(show)
                 }
+
             }
         }
         return shows
     }
     public List<Episode> getEpisodes(Show show, String mediaServerId) {
-        cookies = fixCookies(cookies, mediaServerId)
-        String url = "https://us-my.simple.tv/Library/ShowDetail" +
-                "?browserDateTimeUTC=2014%2F3%2F13+15%3A45%3A21" +
-                "&browserUTCOffsetMinutes=-300" +
-                "&groupID=${show.groupId}"
+
+        String jsonUrl = "http://stv-p-api1-prod.rsslabs.net/content/ond/contentmap/${mediaServerId}/group/${show.groupId}/iteminstances?page=1-201&composition=mediaserver"
         List<Episode> episodes = []
-        new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
-            headers["Cookie"] = cookies.join(";")
-            response.success = { resp, reader ->
-                String h = reader.text
-//                println h
-                Document doc = Jsoup.parse(h)
-                doc.select("#recorded").select("article").each {Element e ->
-                    Episode episode = new Episode()
-                    episode.instanceId = e.select("a.button-standard-watch").attr("data-instanceid")
-                    episode.itemId = e.select("a.button-standard-watch").attr("data-itemid")
-                    episode.groupId = e.select("a.button-standard-watch").attr("data-groupid")
-                    episode.title = e.select("h3").first().text()
-//                    log.info("Episode title: ${episode.title}")
-                    String info = e.select(".show-details-info").html()
-                    episode.date = info.substring(0, info.indexOf("&nbsp;")).trim()
-
-                    if (info.contains("Season: ")) {
-                        String season = info.substring(info.indexOf("Season: "))
-                        season = season.substring(0, season.indexOf("</b>"))
-                        season = season.substring(season.indexOf(">") + 1)
-                        episode.season = season as Integer
+        new HTTPBuilder(jsonUrl).request(Method.GET, ContentType.JSON) {
+            headers["Host"] = "stv-p-api1-prod.rsslabs.net"
+            headers["X-RSSINC-CLIENTTYPE"] = "ipadplayer"
+            headers["User-Agent"] = "Simple.TV/772 CFNetwork/672.1.14 Darwin/14.0.0"
+            headers["Authorization"] = "Basic ${getEncodedUserPass()}"
+            response.success = {resp, reader ->
+                def episodeList = reader
+                episodeList.each { ep ->
+                    ep.Instances.each { inst ->
+                        Episode episode = new Episode()
+                        episode.instanceId = inst.InstanceState.InstanceId
+                        episode.itemId = ep.ID
+                        episode.groupId = show.groupId
+                        episode.title = ep.Title
+                        episode.date = inst.DateTime
+                        episode.season = (ep.EpisodeSeasonNo ? (ep.EpisodeSeasonNo as Integer) : null)
+                        episode.episode = (ep.EpisodeSeasonSequence ? (ep.EpisodeSeasonSequence as Integer) : null)
+                        inst.InstanceState.Streams.each {
+                            episode.baseUrl = it.Location
+                        }
+                        episodes.add(episode)
                     }
-
-                    if (info.contains("Episode: ")) {
-                        String ep = info.substring(info.indexOf("Episode: "))
-                        ep = ep.substring(0, ep.indexOf("</b>"))
-                        ep = ep.substring(ep.indexOf(">") + 1)
-                        episode.episode = ep as Integer
-                    }
-                    episodes.add(episode)
                 }
             }
+
         }
         return episodes
     }
     public List<EpisodeUrl> getEpisodeUrls(Episode episode, String mediaServerId, Boolean useLocalUrls) {
-//        log.info("service episode: ${episode.title}: ${episode.instanceId}:${episode.groupId}:${episode.itemId}")
-        cookies = fixCookies(cookies, mediaServerId)
         Map urlMap = getUrls(mediaServerId)
-
-
         String urlToUse = (useLocalUrls?urlMap.localUrl:urlMap.remoteUrl)
-//        println urlToUse
-        List<EpisodeUrl> episodeUrls = []
-        String url = "https://us-my.simple.tv/Library/Player" +
-                "?browserUTCOffsetMinutes=-300" +
-                "&groupID=${episode.groupId}" +
-                "&itemID=${episode.itemId}" +
-                "&instanceID=${episode.instanceId}" +
-                "&isReachedLocally=${useLocalUrls}"
 
-//        println "Url to get episode urls: ${url}"
-        new HTTPBuilder(url).request(Method.GET, ContentType.TEXT) {
+        List<EpisodeUrl> episodeUrls = []
+
+        new HTTPBuilder(urlToUse + episode.baseUrl).request(Method.GET, ContentType.TEXT) {
             headers["Cookie"] = cookies.join(";")
-            response.success = { resp, reader ->
-                String h = reader.text
-//                println h
-                Document doc = Jsoup.parse(h)
-                String path = doc.getElementById("video-player-large").attr("data-streamlocation")
-//                log.info("Path: ${path}")
-//                log.info("URL: ${urlToUse + path}")
-                new HTTPBuilder(urlToUse + path).request(Method.GET, ContentType.TEXT) {
-                    headers["Cookie"] = cookies.join(";")
-                    response.success = { res, read ->
-                        List<String> qualities = read.text.split("\n")
-                        qualities.each {
-                            if (!it.startsWith("#")) {
-                                Integer inc = it.substring(it.indexOf("hls-") + 4, it.indexOf(".m3u8")) as Integer
-                                String q = it.replaceAll(/hls-[0-9]\.m3u8/, (100 + inc) as String)
-                                String[] pathparts = path.split("/")
-                                String newpath = pathparts[0..(pathparts.length - 2)].join("/")
-                                EpisodeUrl episodeUrl = new EpisodeUrl()
-                                episodeUrl.url = urlToUse + newpath.substring(1) + "/" + q
-//                                log.info(episodeUrl.url)
-                                episodeUrls.add(episodeUrl)
-                            }
-                        }
+            response.success = { res, read ->
+                List<String> qualities = read.text.split("\n")
+                qualities.each {
+                    if (!it.startsWith("#")) {
+                        Integer inc = it.substring(it.indexOf("hls-") + 4, it.indexOf(".m3u8")) as Integer
+                        String q = it.replaceAll(/hls-[0-9]\.m3u8/, (100 + inc) as String)
+                        String[] pathparts = episode.baseUrl.split("/")
+                        String newpath = pathparts[0..(pathparts.length - 2)].join("/")
+                        EpisodeUrl episodeUrl = new EpisodeUrl()
+                        episodeUrl.url = urlToUse + newpath + "/" + q
+                        episodeUrls.add(episodeUrl)
                     }
                 }
             }
         }
         episodeUrls
     }
-    public String downloadEpisode(String url, Show show, Episode episode, String saveLocation, ProgressBarPct downloadPct, Boolean plexCompatible) {
+    public String downloadEpisode(String url, Show show, Episode episode, String saveLocation, ProgressBarPct downloadPct, Integer namingMode) {
 		// TODO: the whole "download" process "fails" silently if no path is
 		// defined, need to get better messaging in here and re-write this code
 		// in a more robust way
@@ -200,19 +164,22 @@ class SimpletvService {
 			// augmented with additional segments
 			prop.setProperty("saveLocation", saveLocation)
 		}
+        prop.setProperty("namingMode", "${namingMode}")
 
         downloadPct.value = 0
 		String filename;
-		if (!plexCompatible) {
+		if (namingMode == 0) {
 			filename = "${show.name} - s${episode.season?:"XX"}e${episode.episode?:"YY"} - ${episode.title}.mp4"
 			filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
-		} else {
+		} else if (namingMode == 2) {
 			// Plex compatible - https://support.plex.tv/hc/en-us/articles/200220687-Naming-Series-Based-TV-Shows
 		    filename = "${show.name} - ${episode.toString()}.mp4"
 			filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
-
 			saveLocation = "${saveLocation}/TV Shows/${show.name}/Season ${episode.getPaddedSeason()}"
-		}
+		} else {
+            filename = "${show.name} - ${episode.toString()}.mp4"
+            filename = filename.replaceAll(/[^a-zA-Z0-9-.&_() ]/, "")
+        }
         if (saveLocation) {
             if (!new File(saveLocation).exists()) {
                 new File(saveLocation).mkdirs()
@@ -262,7 +229,6 @@ class SimpletvService {
         urlMap
     }
     private Set<String> fixCookies(Set<String> cookies, String mediaServerId) {
-        println mediaServerId
         Set<String> newCookies = [] as Set<String>
 //        println cookies
         cookies.each { it ->
@@ -276,5 +242,13 @@ class SimpletvService {
         }
 //        println newCookies
         newCookies
+    }
+    private String getEncodedUserPass() {
+        Properties prop = new Properties()
+        File file = new File("stv.properties")
+        prop.load(file.newDataInputStream())
+        String username = prop.getProperty("username")
+        String password = prop.getProperty("password")
+        "$username:$password".bytes.encodeBase64().toString()
     }
 }

@@ -6,6 +6,7 @@ class SimpletvController {
     SimpletvService simpletvService
 
     def login = {
+
         model.status = "Logging in \"${model.username}\"..."
         model.selectedEpisodeIndex = null
         simpletvService.login(model.username, model.password)
@@ -36,6 +37,7 @@ class SimpletvController {
         model.status = ""
     }
     def getEpisodes = { Integer index ->
+        println model.selectedNamingMode
         model.status = "Getting all episodes for show \"${model.shows[index].name}\"..."
         model.downloadBtnEnabled = false
         model.episodes.clear()
@@ -66,7 +68,7 @@ class SimpletvController {
             model.status = "Downloading episode \"${model.episodes[model.selectedEpisodeIndex].title}\""
             EpisodeUrl episodeUrl = model.episodeUrls[model.selectedUrlIndex]
             log.info(episodeUrl.url)
-            simpletvService.downloadEpisode(episodeUrl.url, model.shows[model.selectedShowIndex], model.episodes[model.selectedEpisodeIndex], model.saveLocation, model.downloadPct, model.plexCompatible)
+            simpletvService.downloadEpisode(episodeUrl.url, model.shows[model.selectedShowIndex], model.episodes[model.selectedEpisodeIndex], model.saveLocation, model.downloadPct, model.selectedNamingMode)
             model.downloadBtnEnabled = true
             model.showListEnabled = true
             model.episodeListEnabled = true
@@ -106,7 +108,7 @@ class SimpletvController {
         urls.eachWithIndex { url, episode, index ->
             model.status = "Downloading episode \"${episode.title}\""
             model.allEpisodesPct.value = ((index + 1) / (episodes.size() as Double)) * 100
-            simpletvService.downloadEpisode(url, model.shows[model.selectedBatchShowIndex], episode, model.saveLocation, model.batchPct, model.plexCompatible)
+            simpletvService.downloadEpisode(url, model.shows[model.selectedBatchShowIndex], episode, model.saveLocation, model.batchPct, model.selectedNamingMode)
         }
         model.allEpisodesPct.value = 100
         if (model.postCommand) {

@@ -6,11 +6,12 @@
     <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/installer-0.8" />
     <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/miglayout-1.0.0" />
     <content url="file://$USER_HOME$/.griffon/1.4.0/projects/simpletv/plugins/swing-1.4.0" />
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="PROVIDED" name="griffon-1.4.0" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="glazedlists_java15-1.9.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="jsoup-1.7.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="griffon-1.4.0" level="application" />
     <orderEntry type="module-library" exported="">
       <library name="Griffon:lib (simpletv-griffonPlugins)">
         <CLASSES>

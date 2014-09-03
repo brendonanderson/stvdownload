@@ -9,6 +9,7 @@ class Episode {
     String date
     Integer season
     Integer episode
+    String baseUrl
 
 	/**
 	 * Get the string showing season and episode. Season and episode will both

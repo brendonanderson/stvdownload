@@ -15,6 +15,9 @@ import simpletv.SimpletvModel
  */
 
 SimpletvModel stvmodel = app.getModels()["simpletv"] as SimpletvModel
+
+
+
 Properties prop = new Properties()
 File file = new File("stv.properties")
 if (file.exists()) {
@@ -23,6 +26,7 @@ if (file.exists()) {
     stvmodel.password = prop.getProperty("password")
     stvmodel.saveLocation = prop.getProperty("saveLocation")?:System.getProperty('user.home')
     stvmodel.postCommand = prop.getProperty("postCommand")
+    stvmodel.selectedNamingMode = prop.getProperty("namingMode")? prop.getProperty("namingMode") as Integer : 2
 } else {
     stvmodel.saveLocation = System.getProperty('user.home')
 }
