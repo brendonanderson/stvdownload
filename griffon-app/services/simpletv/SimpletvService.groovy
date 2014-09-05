@@ -102,7 +102,7 @@ class SimpletvService {
             response.success = {resp, reader ->
                 def episodeList = reader
                 episodeList.each { ep ->
-                    println ep
+//                    println ep
                     ep.Instances.each { inst ->
                         Episode episode = new Episode()
                         episode.instanceId = inst.InstanceState.InstanceId
@@ -115,7 +115,7 @@ class SimpletvService {
                         inst.InstanceState.Streams.each {
                             episode.baseUrl = it.Location
                         }
-                        if (inst.InstanceState.State == "Library") {
+                        if (episode.baseUrl != null) {
                             episodes.add(episode)
                         }
                     }

@@ -37,7 +37,6 @@ class SimpletvController {
         model.status = ""
     }
     def getEpisodes = { Integer index ->
-        println model.selectedNamingMode
         model.status = "Getting all episodes for show \"${model.shows[index].name}\"..."
         model.downloadBtnEnabled = false
         model.episodes.clear()
